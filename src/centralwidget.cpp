@@ -35,9 +35,6 @@ CentralWidget::CentralWidget(QWidget *parent) :
     layout->addStretch(1);
     this->setLayout(layout);
 
-    this->connect(this, &CentralWidget::filesAccepted,
-                  this, &CentralWidget::populateOpenableUrls,
-                  Qt::QueuedConnection);
     this->connect(this, &CentralWidget::sessionOpened,
                   this, &CentralWidget::nextPage,
                   Qt::QueuedConnection);
@@ -48,29 +45,20 @@ CentralWidget::~CentralWidget()
     delete this->iterator;
 }
 
-bool CentralWidget::openUrls(const QList<QUrl> &sources)
-{
-    QList<QUrl> urls;
-    for (auto url : sources)
-    {
-        if (!url.isLocalFile())
-            continue;
-        if (!mdb.mimeTypeForUrl(url).inherits("application/zip"))
-            continue;
-        urls.append(url);
-    }
-    if (urls.isEmpty())
-        return false;
-    this->populateOpenableUrls(urls);
-    return true;
-}
-
 bool CentralWidget::openLocalPaths(const QStringList &paths)
 {
-    QList<QUrl> urls;
+    QList<QFileInfo> infos;
     for (const QString &path : paths)
-        urls.append(QUrl::fromLocalFile(QFileInfo(path).absoluteFilePath()));
-    return this->openUrls(urls);
+    {
+        QFileInfo info(path);
+        if (!info.exists() || !EntryIterator::isValidEntry(info))
+            continue;
+        infos.append(info);
+    }
+    if (infos.isEmpty())
+        return false;
+    this->populateOpenableEntries(infos);
+    return true;
 }
 
 void CentralWidget::dragEnterEvent(QDragEnterEvent *event)
@@ -79,7 +67,7 @@ void CentralWidget::dragEnterEvent(QDragEnterEvent *event)
     {
         if (!url.isLocalFile())
             continue;
-        if (!mdb.mimeTypeForUrl(url).inherits("application/zip"))
+        if (!EntryIterator::isValidEntry(QFileInfo(url.toLocalFile())))
             continue;
         event->acceptProposedAction();
         return;
@@ -88,7 +76,14 @@ void CentralWidget::dragEnterEvent(QDragEnterEvent *event)
 
 void CentralWidget::dropEvent(QDropEvent *event)
 {
-    emit filesAccepted(event->mimeData()->urls());
+    QStringList paths;
+    for (auto url : event->mimeData()->urls())
+    {
+        if (!url.isLocalFile())
+            continue;
+        paths.append(url.toLocalFile());
+    }
+    this->openLocalPaths(paths);
 }
 
 void CentralWidget::keyPressEvent(QKeyEvent *event)
@@ -143,13 +138,19 @@ void CentralWidget::wheelEvent(QWheelEvent *event)
         this->previousPage();
 }
 
-void CentralWidget::populateOpenableUrls(QList<QUrl> urls)
+void CentralWidget::populateOpenableEntries(const QList<QFileInfo> &sources)
 {
-    std::sort(urls.begin(), urls.end());
+    QList<QFileInfo> infos = sources;
+    std::sort(infos.begin(), infos.end(), [](const auto &lhs, const auto& rhs) {
+        // TODO: Maybe we should do per-component comparison?
+        return lhs.absoluteFilePath() < rhs.absoluteFilePath();
+    });
+
     delete this->iterator;
     this->fCache.clear();
     this->bCache.clear();
-    this->iterator = new EntryIterator(urls);
+    this->iterator = new EntryIterator(infos);
+
     emit sessionOpened();
 }
 

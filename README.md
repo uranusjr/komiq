@@ -31,5 +31,4 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 * 1-label view if page is wide
 * Auto-rotate if screen is vertical and page is wide
 * Non-ASCII file names
-* Open (non-compressed) folder, a bunch of images, and a combination of things
 * Windows Explorer integration

@@ -2,7 +2,7 @@
 #define CENTRALWIDGET_H
 
 #include <QStack>
-#include <QUrl>
+#include <QFileInfo>
 #include <QWidget>
 #include "image.h"
 
@@ -17,8 +17,8 @@ public:
     explicit CentralWidget(QWidget *parent = nullptr);
     ~CentralWidget() override;
 
-    bool openUrls(const QList<QUrl> &urls);
     bool openLocalPaths(const QStringList &paths);
+    bool openFiles(const QList<QFileInfo> &infos);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
@@ -29,11 +29,10 @@ protected:
     void wheelEvent(QWheelEvent *event) override;
 
 signals:
-    void filesAccepted(QList<QUrl> urls);
     void sessionOpened();
 
 private:
-    void populateOpenableUrls(QList<QUrl> urls);
+    void populateOpenableEntries(const QList<QFileInfo> &infos);
     void nextPage();
     void previousPage();
 
