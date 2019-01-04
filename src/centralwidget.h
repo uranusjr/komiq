@@ -2,10 +2,10 @@
 #define CENTRALWIDGET_H
 
 #include <QStack>
-#include <QFileInfo>
 #include <QWidget>
 #include "image.h"
 
+class QFileInfo;
 class QLabel;
 class EntryIterator;
 

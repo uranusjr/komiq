@@ -1,16 +1,9 @@
-#include <QDebug>
-#include <QDropEvent>
 #include <QFileInfo>
-#include <QGestureEvent>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMimeData>
-#include <QMimeDatabase>
-#include <QPixmap>
 #include "centralwidget.h"
 #include "entryiterator.h"
-
-static QMimeDatabase mdb;
 
 CentralWidget::CentralWidget(QWidget *parent) :
     QWidget(parent), iterator(nullptr),

@@ -1,6 +1,5 @@
 #include <QApplication>
 #include <QCommandLineParser>
-#include <QMetaObject>
 #include "centralwidget.h"
 
 int main(int argc, char *argv[])

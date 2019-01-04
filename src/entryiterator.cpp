@@ -1,5 +1,3 @@
-#include <QDebug>
-#include <QDir>
 #include <QDirIterator>
 #include "zip/zip.h"
 #include "entryiterator.h"

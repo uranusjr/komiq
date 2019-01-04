@@ -1,10 +1,10 @@
 #ifndef ENTRYITERATOR_H
 #define ENTRYITERATOR_H
 
-#include <QFileInfo>
 #include <QList>
 #include <QScopedPointer>
 
+class QFileInfo;
 struct zip_t;
 
 class EntryIterator
