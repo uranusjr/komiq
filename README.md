@@ -27,7 +27,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ## TODO
 
 * Double tap (but not click!) to turn back
-* Drag to icon to open
 * 1-label view if screen is vertical
 * 1-label view if page is wide
 * Auto-rotate if screen is vertical and page is wide

@@ -36,7 +36,7 @@ CentralWidget::CentralWidget(QWidget *parent) :
     this->setLayout(layout);
 
     this->connect(this, &CentralWidget::filesAccepted,
-                  this, &CentralWidget::openUrls,
+                  this, &CentralWidget::populateOpenableUrls,
                   Qt::QueuedConnection);
     this->connect(this, &CentralWidget::sessionOpened,
                   this, &CentralWidget::nextPage,
@@ -46,6 +46,31 @@ CentralWidget::CentralWidget(QWidget *parent) :
 CentralWidget::~CentralWidget()
 {
     delete this->iterator;
+}
+
+bool CentralWidget::openUrls(const QList<QUrl> &sources)
+{
+    QList<QUrl> urls;
+    for (auto url : sources)
+    {
+        if (!url.isLocalFile())
+            continue;
+        if (!mdb.mimeTypeForUrl(url).inherits("application/zip"))
+            continue;
+        urls.append(url);
+    }
+    if (urls.isEmpty())
+        return false;
+    this->populateOpenableUrls(urls);
+    return true;
+}
+
+bool CentralWidget::openLocalPaths(const QStringList &paths)
+{
+    QList<QUrl> urls;
+    for (const QString &path : paths)
+        urls.append(QUrl::fromLocalFile(QFileInfo(path).absoluteFilePath()));
+    return this->openUrls(urls);
 }
 
 void CentralWidget::dragEnterEvent(QDragEnterEvent *event)
@@ -63,16 +88,7 @@ void CentralWidget::dragEnterEvent(QDragEnterEvent *event)
 
 void CentralWidget::dropEvent(QDropEvent *event)
 {
-    QList<QUrl> urls;
-    for (auto url : event->mimeData()->urls())
-    {
-        if (!url.isLocalFile())
-            continue;
-        if (!mdb.mimeTypeForUrl(url).inherits("application/zip"))
-            continue;
-        urls.append(url);
-    }
-    emit filesAccepted(urls);
+    emit filesAccepted(event->mimeData()->urls());
 }
 
 void CentralWidget::keyPressEvent(QKeyEvent *event)
@@ -127,7 +143,7 @@ void CentralWidget::wheelEvent(QWheelEvent *event)
         this->previousPage();
 }
 
-void CentralWidget::openUrls(QList<QUrl> urls)
+void CentralWidget::populateOpenableUrls(QList<QUrl> urls)
 {
     std::sort(urls.begin(), urls.end());
     delete this->iterator;

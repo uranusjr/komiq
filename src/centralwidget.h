@@ -17,6 +17,9 @@ public:
     explicit CentralWidget(QWidget *parent = nullptr);
     ~CentralWidget() override;
 
+    bool openUrls(const QList<QUrl> &urls);
+    bool openLocalPaths(const QStringList &paths);
+
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
@@ -30,7 +33,7 @@ signals:
     void sessionOpened();
 
 private:
-    void openUrls(QList<QUrl> urls);
+    void populateOpenableUrls(QList<QUrl> urls);
     void nextPage();
     void previousPage();
 
