@@ -21,7 +21,8 @@ private:
     QList<QUrl>::const_iterator cur;
 
     zip_t *zip;
-    int zei;
+    QStringList entries;
+    QStringList::const_iterator entit;
 };
 
 #endif // ENTRYITERATOR_H

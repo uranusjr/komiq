@@ -4,7 +4,7 @@
 #include "entryiterator.h"
 
 EntryIterator::EntryIterator(const QList<QUrl> &urls) :
-    urls(urls), zip(nullptr), zei(0)
+    urls(urls), zip(nullptr)
 {
     this->cur = this->urls.cbegin();
 }
@@ -35,7 +35,18 @@ QByteArray EntryIterator::next()
     this->zip = zip_open(filename.toLocal8Bit().constData(), 0, 'r');
     if (!this->zip)
         qDebug() << "Failed to open" << filename;
-    this->zei = 0;
+    this->entries.clear();
+    if (this->zip)
+    {
+        for (int i = 0; i < zip_total_entries(this->zip); i++)
+        {
+            zip_entry_openbyindex(this->zip, i);
+            QString name = QString::fromLocal8Bit(zip_entry_name(this->zip));
+            this->entries.append(name);
+        }
+        std::sort(this->entries.begin(), this->entries.end());
+        this->entit = this->entries.cbegin();
+    }
     this->cur++;
 
     return this->nextInZip();
@@ -47,19 +58,18 @@ QByteArray EntryIterator::nextInZip()
         return QByteArray();
 
     // Already at the end of the current zip. Close it.
-    if (this->zei >= zip_total_entries(this->zip))
+    if (this->entit == this->entries.cend())
     {
         zip_close(this->zip);
         this->zip = nullptr;
-        this->zei = 0;
         return QByteArray();
     }
 
-    zip_entry_openbyindex(this->zip, this->zei);
+    zip_entry_open(this->zip, (*entit).toLocal8Bit().constData());
     auto bufsize = zip_entry_size(this->zip);
     QByteArray bytes(static_cast<int>(bufsize), '\0');
     zip_entry_noallocread(this->zip, bytes.data(), bufsize);
-    this->zei += 1;
+    this->entit++;
 
     return bytes;
 }
