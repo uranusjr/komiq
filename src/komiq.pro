@@ -4,9 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += core gui widgets
 
 TARGET = komiq
 TEMPLATE = app
@@ -26,18 +24,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-    main.cpp \
     zip/zip.c \
     centralwidget.cpp \
-    imageiterator.cpp \
-    image.cpp
+    image.cpp \
+    entryiterator.cpp \
+    main.cpp
 
 HEADERS += \
     zip/miniz.h \
     zip/zip.h \
     centralwidget.h \
-    imageiterator.h \
-    image.h
+    image.h \
+    entryiterator.h
 
 FORMS +=
 

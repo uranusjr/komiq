@@ -1,17 +1,16 @@
-#ifndef IMAGEITERATOR_H
-#define IMAGEITERATOR_H
+#ifndef ENTRYITERATOR_H
+#define ENTRYITERATOR_H
 
 #include <QList>
-#include <QScopedPointer>
 #include <QUrl>
 
 struct zip_t;
 
-class ImageIterator
+class EntryIterator
 {
 public:
-    explicit ImageIterator(const QList<QUrl> &urls);
-    ~ImageIterator();
+    explicit EntryIterator(const QList<QUrl> &urls);
+    ~EntryIterator();
 
     QByteArray next();
 
@@ -25,4 +24,4 @@ private:
     int zei;
 };
 
-#endif // IMAGEITERATOR_H
+#endif // ENTRYITERATOR_H

@@ -7,7 +7,7 @@
 #include "image.h"
 
 class QLabel;
-class ImageIterator;
+class EntryIterator;
 
 class CentralWidget : public QWidget
 {
@@ -36,7 +36,7 @@ private:
     Image readNext();
     void refreshLabels();
 
-    ImageIterator *iterator;
+    EntryIterator *iterator;
 
     Image image1;
     Image image2;

@@ -1,21 +1,21 @@
 #include <QDebug>
 #include <QDir>
 #include "zip/zip.h"
-#include "imageiterator.h"
+#include "entryiterator.h"
 
-ImageIterator::ImageIterator(const QList<QUrl> &urls) :
+EntryIterator::EntryIterator(const QList<QUrl> &urls) :
     urls(urls), zip(nullptr), zei(0)
 {
     this->cur = this->urls.cbegin();
 }
 
-ImageIterator::~ImageIterator()
+EntryIterator::~EntryIterator()
 {
     if (this->zip)
         zip_close(this->zip);
 }
 
-QByteArray ImageIterator::next()
+QByteArray EntryIterator::next()
 {
     // Try the current zip.
     QByteArray bytes = this->nextInZip();
@@ -41,7 +41,7 @@ QByteArray ImageIterator::next()
     return this->nextInZip();
 }
 
-QByteArray ImageIterator::nextInZip()
+QByteArray EntryIterator::nextInZip()
 {
     if (!this->zip)
         return QByteArray();

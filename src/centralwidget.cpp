@@ -8,7 +8,7 @@
 #include <QMimeDatabase>
 #include <QPixmap>
 #include "centralwidget.h"
-#include "imageiterator.h"
+#include "entryiterator.h"
 
 static QMimeDatabase mdb;
 
@@ -109,7 +109,7 @@ void CentralWidget::openUrls(QList<QUrl> urls)
     delete this->iterator;
     this->fCache.clear();
     this->bCache.clear();
-    this->iterator = new ImageIterator(urls);
+    this->iterator = new EntryIterator(urls);
     emit sessionOpened();
 }
 
