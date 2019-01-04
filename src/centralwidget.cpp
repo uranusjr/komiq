@@ -75,6 +75,30 @@ void CentralWidget::dropEvent(QDropEvent *event)
     emit filesAccepted(urls);
 }
 
+void CentralWidget::keyPressEvent(QKeyEvent *event)
+{
+    switch (event->key())
+    {
+    case Qt::Key::Key_Down:
+        this->nextPage();
+        break;
+    case Qt::Key::Key_Up:
+        this->previousPage();
+        break;
+    case Qt::Key::Key_Right:
+        this->nextPage();
+        break;
+    case Qt::Key::Key_Left:
+        this->previousPage();
+        break;
+    case Qt::Key::Key_Space:
+        this->nextPage();
+        break;
+    default:
+        break;
+    }
+}
+
 void CentralWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     switch (event->button())
