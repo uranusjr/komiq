@@ -26,9 +26,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 ## TODO
 
+* Windows Explorer integration
 * Double tap (but not click!) to turn back
 * 1-label view if screen is vertical
 * 1-label view if page is wide
 * Auto-rotate if screen is vertical and page is wide
+* Seeker
 * Non-ASCII file names
-* Windows Explorer integration
