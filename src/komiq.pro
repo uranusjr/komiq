@@ -28,16 +28,14 @@ SOURCES += \
     centralwidget.cpp \
     image.cpp \
     entryiterator.cpp \
-    main.cpp \
-    utils.cpp
+    main.cpp
 
 HEADERS += \
     zip/miniz.h \
     zip/zip.h \
     centralwidget.h \
     image.h \
-    entryiterator.h \
-    utils.h
+    entryiterator.h
 
 FORMS +=
 

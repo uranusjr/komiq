@@ -1,7 +1,10 @@
 #include <QDirIterator>
+#include <QImageReader>
+#include <QMimeDatabase>
 #include "zip/zip.h"
 #include "entryiterator.h"
-#include "utils.h"
+
+static QMimeDatabase mdb;
 
 namespace
 {
@@ -27,34 +30,6 @@ public:
 private:
     QFileInfo info;
     bool done;
-};
-
-class DirectoryIterator : public EntryIterator::SubIterator
-{
-public:
-    DirectoryIterator(const QDir &dir) :
-        iter(dir, QDirIterator::Subdirectories | QDirIterator::FollowSymlinks)
-    {}
-
-    QByteArray next()
-    {
-        while (true)
-        {
-            if (this->iter.next().isEmpty())
-                return QByteArray();
-            auto info = this->iter.fileInfo();
-            if (!isImageFile(info))
-                continue;
-            QFile file(info.absoluteFilePath());
-            file.open(QIODevice::ReadOnly);
-            QByteArray data = file.readAll();
-            file.close();
-            return data;
-        }
-    }
-
-private:
-    QDirIterator iter;
 };
 
 class ZipArchiveIterator : public EntryIterator::SubIterator
@@ -103,6 +78,46 @@ private:
     QStringList::const_iterator iter;
 };
 
+class DirectoryIterator : public EntryIterator::SubIterator
+{
+public:
+    DirectoryIterator(const QDir &dir) :
+        iter(dir, QDirIterator::Subdirectories | QDirIterator::FollowSymlinks)
+    {}
+
+    QByteArray next()
+    {
+        while (true)
+        {
+            if (this->sub)
+            {
+                auto next = this->sub->next();
+                if (!next.isNull())
+                    return next;
+            }
+            if (this->iter.next().isEmpty())
+                return QByteArray();
+            auto info = this->iter.fileInfo();
+            switch (EntryIterator::fileType(info))
+            {
+            case EntryIterator::Unsuppoerted:
+            case EntryIterator::Directory:
+                break;
+            case EntryIterator::Image:
+                this->sub.reset(new ImageFileIterator(info));
+                break;
+            case EntryIterator::ZipArchive:
+                this->sub.reset(new ZipArchiveIterator(info));
+                break;
+            }
+        }
+    }
+
+private:
+    QDirIterator iter;
+    QScopedPointer<EntryIterator::SubIterator> sub;
+};
+
 }   // (anonymous namespace)
 
 EntryIterator::EntryIterator(const QList<QFileInfo> &infos) : infos(infos)
@@ -110,9 +125,19 @@ EntryIterator::EntryIterator(const QList<QFileInfo> &infos) : infos(infos)
     this->cur = this->infos.cbegin();
 }
 
-bool EntryIterator::isValidEntry(const QFileInfo &info)
+EntryIterator::FileType EntryIterator::fileType(const QFileInfo &info)
 {
-    return (info.isDir() || isImageFile(info) || isZipArchive(info));
+    if (info.isDir())
+        return Directory;
+    auto mime = mdb.mimeTypeForFile(info);
+    if (mime.inherits("application/zip"))
+        return ZipArchive;
+    for (auto name : QImageReader::supportedMimeTypes())
+    {
+        if (mime.inherits(QString::fromLocal8Bit(name)))
+            return Image;
+    }
+    return Unsuppoerted;
 }
 
 QByteArray EntryIterator::next()
@@ -137,14 +162,20 @@ QByteArray EntryIterator::next()
         // Open a new one to read.
         SubIterator *next;
         auto info = *this->cur;
-        if (info.isDir())
-            next = new DirectoryIterator(info.dir());
-        else if (isImageFile(info))
+        switch (fileType(info))
+        {
+        case Unsuppoerted:
+            return bytes;
+        case Directory:
+            next = new DirectoryIterator(QDir(info.absoluteFilePath()));
+            break;
+        case Image:
             next = new ImageFileIterator(info);
-        else if (isZipArchive(info))
+            break;
+        case ZipArchive:
             next = new ZipArchiveIterator(info);
-        else
-            return QByteArray();
+            break;
+        }
         this->iter.reset(next);
         this->cur++;
     }
