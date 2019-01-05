@@ -1,8 +1,42 @@
 #include <QDirIterator>
 #include <QImageReader>
 #include <QMimeDatabase>
+#ifdef Q_OS_WIN
+#include <Windows.h>
+#endif
 #include "zip/zip.h"
 #include "entryiterator.h"
+
+#ifdef Q_OS_WIN
+static zip_t *zip_open_unicode(const QFileInfo &info, int level, char mode)
+{
+    auto path = QDir::toNativeSeparators(info.absoluteFilePath());
+    if (path.isEmpty())
+        return nullptr;
+
+    // Convert path components to short names, which allows fopen_s (used by
+    // miniz internally) to handle non-ASCII paths.
+
+    wchar_t *full = new wchar_t[static_cast<size_t>(path.size()) + 1];
+    full[path.toWCharArray(full)] = '\0';
+
+    auto len = ::GetShortPathNameW(full, nullptr, 0);
+    wchar_t *shrt = new wchar_t[len];
+    ::GetShortPathNameW(full, shrt, len);
+
+    auto shortened = QString::fromWCharArray(shrt, static_cast<int>(len));
+    delete [] full;
+    delete [] shrt;
+
+    return zip_open(shortened.toLocal8Bit().constData(), level, mode);
+}
+#else
+static zip_t *zip_open_unicode(const QFileInfo &info, int level, char mode)
+{
+    auto filename = QDir::toNativeSeparators(info.absoluteFilePath());
+    return zip_open(filename.toLocal8Bit().constData(), level, mode);
+}
+#endif
 
 static QMimeDatabase mdb;
 
@@ -37,14 +71,12 @@ private:
 class ZipArchiveIterator : public EntryIterator::SubIterator
 {
 public:
-    ZipArchiveIterator(const QFileInfo &info) : info(info), zip(nullptr)
+    ZipArchiveIterator(const QFileInfo &info) :
+        info(info), zip(zip_open_unicode(info, 0, 'r'))
     {
-        // TODO: This cannot handle non-ASCII characters. How viable is it to
-        // patch zip.c to use Qt's file API instead?
-        auto filename = QDir::toNativeSeparators(info.absoluteFilePath());
-        this->zip = zip_open(filename.toLocal8Bit().constData(), 0, 'r');
         if (!this->zip)
             return;
+
         for (int i = 0; i < zip_total_entries(this->zip); i++)
         {
             zip_entry_openbyindex(this->zip, i);

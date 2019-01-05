@@ -28,4 +28,3 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 * Windows Explorer integration
 * Seeker
-* Non-ASCII file names
