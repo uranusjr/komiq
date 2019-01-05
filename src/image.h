@@ -12,6 +12,7 @@ public:
     QPixmap scaledToFit(int w, int h) const;
 
     bool isNull() const;
+    bool isHorizontal() const;
 
 private:
     QPixmap orig;

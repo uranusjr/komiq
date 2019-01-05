@@ -149,6 +149,8 @@ void CentralWidget::nextPage()
 {
     Image p;
 
+    // Read one image. If this fails, we are at the end of the session. Do
+    // nothing to stay on the last page.
     p = this->readNext();
     if (p.isNull())
         return;
@@ -157,7 +159,21 @@ void CentralWidget::nextPage()
         this->bCache.push(this->image1);
     this->image1 = p;
 
-    p = this->readNext();
+    // Read another image if the current one is not horizontal.
+    if (p.isHorizontal())
+        p = Image();
+    else
+        p = this->readNext();
+
+    // If the the second read image is horizontal, that image needs to be on its
+    // own page. Show only one image on the current page, and keep the read
+    // horizontal image for the next.
+    if (p.isHorizontal())
+    {
+        this->fCache.push(p);
+        p = Image();
+    }
+
     if (!this->image2.isNull())
         this->bCache.push(this->image2);
     this->image2 = p;

@@ -20,3 +20,10 @@ bool Image::isNull() const
 {
     return this->orig.isNull();
 }
+
+bool Image::isHorizontal() const
+{
+    if (this->orig.isNull())
+        return false;
+    return (this->orig.width() > this->orig.height());
+}
