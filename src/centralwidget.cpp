@@ -276,6 +276,16 @@ void CentralWidget::refreshLabels()
             label->setPixmap(image.scaledToFit(w, h));
         label->setVisible(!image.isNull());
     }
+
+    // Special case: In vertical mode, if the current image is horizontal,
+    // rotate if to view in maximum.
+    if (this->isVerticalMode() && this->image1.isHorizontal())
+    {
+        auto pixmap = this->image1.scaledToFit(h, w);
+        QMatrix matrix;
+        matrix.rotate(90);
+        this->label1->setPixmap(pixmap.transformed(matrix));
+    }
 }
 
 bool CentralWidget::isVerticalMode() const

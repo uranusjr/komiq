@@ -28,6 +28,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 * Windows Explorer integration
 * Double tap (but not click!) to turn back
-* Auto-rotate if screen is vertical and page is wide
 * Seeker
 * Non-ASCII file names
