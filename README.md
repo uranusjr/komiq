@@ -27,6 +27,5 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 ## TODO
 
 * Windows Explorer integration
-* Double tap (but not click!) to turn back
 * Seeker
 * Non-ASCII file names

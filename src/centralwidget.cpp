@@ -1,16 +1,21 @@
+#include <QApplication>
 #include <QFileInfo>
+#include <QGestureEvent>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMimeData>
+#include <QTimer>
 #include "centralwidget.h"
 #include "entryiterator.h"
 
 CentralWidget::CentralWidget(QWidget *parent) :
     QWidget(parent), iterator(nullptr),
-    label1(new QLabel()), label2(new QLabel())
+    label1(new QLabel()), label2(new QLabel()),
+    doubleTapTimer(new QTimer(this))
 {
     this->setAcceptDrops(true);
     this->setAutoFillBackground(true);
+    this->grabGesture(Qt::TapGesture);
     this->setMinimumSize(640, 480);
 
     // Black background.
@@ -27,6 +32,8 @@ CentralWidget::CentralWidget(QWidget *parent) :
     layout->addWidget(this->label2, 0, Qt::AlignCenter);
     layout->addStretch(1);
     this->setLayout(layout);
+
+    this->doubleTapTimer->setSingleShot(true);
 }
 
 CentralWidget::~CentralWidget()
@@ -48,6 +55,22 @@ bool CentralWidget::openLocalPaths(const QStringList &paths)
         return false;
     this->populateOpenableEntries(infos);
     return true;
+}
+
+bool CentralWidget::event(QEvent *event)
+{
+    if (event->type() == QEvent::Gesture)
+    {
+        auto e = dynamic_cast<QGestureEvent *>(event);
+        for (auto gesture : e->gestures())
+        {
+            if (gesture->gestureType() == Qt::TapGesture
+                    && gesture->state() == Qt::GestureFinished)
+                this->handleTap(dynamic_cast<QTapGesture *>(gesture));
+        }
+        return true;
+    }
+    return QWidget::event(event);
 }
 
 void CentralWidget::dragEnterEvent(QDragEnterEvent *event)
@@ -101,6 +124,11 @@ void CentralWidget::keyPressEvent(QKeyEvent *event)
 
 void CentralWidget::mouseReleaseEvent(QMouseEvent *event)
 {
+    // HACK: Is there a way to avoid triggering click events AT ALL at the
+    // synthesizer level?
+    if (event->source() == Qt::MouseEventSynthesizedByQt)
+        return;
+
     switch (event->button())
     {
     case Qt::MouseButton::LeftButton:
@@ -138,6 +166,28 @@ void CentralWidget::wheelEvent(QWheelEvent *event)
         this->nextPage();
     else
         this->previousPage();
+}
+
+void CentralWidget::handleTap(QTapGesture *)
+{
+    // Trigger double tap event.
+    if (this->doubleTapTimer->isActive())
+    {
+        this->doubleTapTimer->stop();
+        this->previousPage();
+        return;
+    }
+
+    // Wait for the next tap. We reuse the system's double click setting, but
+    // cap the upper limit to avoid delaying single taps.
+    static QMetaObject::Connection conn;
+    if (!conn)
+    {
+        conn = this->connect(this->doubleTapTimer, &QTimer::timeout,
+                             this, &CentralWidget::nextPage,
+                             Qt::QueuedConnection);
+    }
+    this->doubleTapTimer->start(std::min(qApp->doubleClickInterval(), 300));
 }
 
 void CentralWidget::populateOpenableEntries(const QList<QFileInfo> &sources)
