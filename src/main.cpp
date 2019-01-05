@@ -5,6 +5,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.setApplicationName("Komiq");
 
     QCommandLineParser parser;
     parser.addPositionalArgument("files", "file to open", "[file ...]");

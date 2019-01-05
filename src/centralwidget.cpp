@@ -218,6 +218,8 @@ void CentralWidget::nextPage()
     if (p.isNull())
         return;
 
+    QString currentName = this->iterator->currentName();
+
     if (!this->image1.isNull())
         this->bCache.push(this->image1);
     this->image1 = p;
@@ -243,6 +245,11 @@ void CentralWidget::nextPage()
     this->image2 = p;
 
     this->refreshLabels();
+
+    QString title = QString("%1 - %2")
+            .arg(qApp->applicationName())
+            .arg(currentName);
+    this->setWindowTitle(title);
 }
 
 void CentralWidget::previousPage()

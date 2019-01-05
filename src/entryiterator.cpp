@@ -27,6 +27,8 @@ public:
         return data;
     }
 
+    QString name() const { return this->info.absoluteFilePath(); }
+
 private:
     QFileInfo info;
     bool done;
@@ -35,7 +37,7 @@ private:
 class ZipArchiveIterator : public EntryIterator::SubIterator
 {
 public:
-    ZipArchiveIterator(const QFileInfo &info) : zip(nullptr)
+    ZipArchiveIterator(const QFileInfo &info) : info(info), zip(nullptr)
     {
         // TODO: This cannot handle non-ASCII characters. How viable is it to
         // patch zip.c to use Qt's file API instead?
@@ -72,7 +74,10 @@ public:
         return bytes;
     }
 
+    QString name() const { return this->info.absoluteFilePath(); }
+
 private:
+    QFileInfo info;
     zip_t *zip;
     QStringList entries;
     QStringList::const_iterator iter;
@@ -112,6 +117,8 @@ public:
             }
         }
     }
+
+    QString name() const { return this->iter.fileInfo().absoluteFilePath(); }
 
 private:
     QDirIterator iter;
@@ -179,4 +186,9 @@ QByteArray EntryIterator::next()
         this->iter.reset(next);
         this->cur++;
     }
+}
+
+QString EntryIterator::currentName() const
+{
+    return this->iter->name();
 }

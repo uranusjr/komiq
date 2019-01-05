@@ -24,6 +24,7 @@ public:
     {
         virtual ~SubIterator() {}
         virtual QByteArray next() = 0;
+        virtual QString name() const = 0;
     };
 
     static FileType fileType(const QFileInfo &info);
@@ -38,6 +39,7 @@ public:
     { return fileType(info) == FileType::ZipArchive; }
 
     QByteArray next();
+    QString currentName() const;
 
 private:
     QList<QFileInfo> infos;
