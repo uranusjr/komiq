@@ -35,6 +35,7 @@ private:
 
     Image readNext();
     void refreshLabels();
+    bool isVerticalMode() const;
 
     EntryIterator *iterator;
 

@@ -116,6 +116,19 @@ void CentralWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void CentralWidget::resizeEvent(QResizeEvent *)
 {
+    if (this->isVerticalMode())
+    {
+        if (!this->image2.isNull())
+        {
+            this->fCache.push(this->image2);
+            this->image2 = Image();
+        }
+    }
+    else
+    {
+        if (this->image2.isNull())
+            this->image2 = this->readNext();
+    }
     this->refreshLabels();
 }
 
@@ -159,8 +172,9 @@ void CentralWidget::nextPage()
         this->bCache.push(this->image1);
     this->image1 = p;
 
-    // Read another image if the current one is not horizontal.
-    if (p.isHorizontal())
+    // Read another image in non-vertical mode, and if the current is not
+    // horizontal.
+    if (this->isVerticalMode() || p.isHorizontal())
         p = Image();
     else
         p = this->readNext();
@@ -192,10 +206,24 @@ void CentralWidget::previousPage()
         this->fCache.push(*this->label1->pixmap());
 
     this->image1 = this->bCache.pop();
-    if (!this->bCache.isEmpty())
+    this->image2 = Image();
+
+    // We want another image (if there is one) in non-vertical mode, and if the
+    // current image is not horizontal...
+    if (this->bCache.size() && !this->isVerticalMode()
+            && !this->image1.isHorizontal())
     {
-        this->image2 = this->image1;
-        this->image1 = this->bCache.pop();
+        auto image = this->bCache.pop();
+        if (image.isHorizontal())
+        {
+            // ... But not if the newly-loaded page is itself horizontal.
+            this->bCache.push(image);
+        }
+        else
+        {
+            this->image2 = this->image1;
+            this->image1 = image;
+        }
     }
     this->refreshLabels();
 }
@@ -248,4 +276,9 @@ void CentralWidget::refreshLabels()
             label->setPixmap(image.scaledToFit(w, h));
         label->setVisible(!image.isNull());
     }
+}
+
+bool CentralWidget::isVerticalMode() const
+{
+    return this->width() < this->height();
 }
