@@ -28,9 +28,6 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
-signals:
-    void sessionOpened();
-
 private:
     void populateOpenableEntries(const QList<QFileInfo> &infos);
     void nextPage();

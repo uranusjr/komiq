@@ -27,10 +27,6 @@ CentralWidget::CentralWidget(QWidget *parent) :
     layout->addWidget(this->label2, 0, Qt::AlignCenter);
     layout->addStretch(1);
     this->setLayout(layout);
-
-    this->connect(this, &CentralWidget::sessionOpened,
-                  this, &CentralWidget::nextPage,
-                  Qt::QueuedConnection);
 }
 
 CentralWidget::~CentralWidget()
@@ -144,14 +140,16 @@ void CentralWidget::populateOpenableEntries(const QList<QFileInfo> &sources)
     this->bCache.clear();
     this->iterator = new EntryIterator(infos);
 
-    emit sessionOpened();
+    this->label1->clear();
+    this->label2->clear();
+    this->nextPage();
 }
 
 void CentralWidget::nextPage()
 {
     Image p;
 
-    p = readNext();
+    p = this->readNext();
     if (p.isNull())
         return;
 
@@ -159,7 +157,7 @@ void CentralWidget::nextPage()
         this->bCache.push(this->image1);
     this->image1 = p;
 
-    p = readNext();
+    p = this->readNext();
     if (!this->image2.isNull())
         this->bCache.push(this->image2);
     this->image2 = p;
