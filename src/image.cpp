@@ -12,8 +12,8 @@ const QPixmap &Image::original() const
 QPixmap Image::scaledToFit(int w, int h) const
 {
     if ((1.0 * w / h) > (1.0 * this->orig.width() / this->orig.height()))
-        return this->orig.scaledToHeight(h);
-    return this->orig.scaledToWidth(w);
+        return this->orig.scaledToHeight(h, Qt::SmoothTransformation);
+    return this->orig.scaledToWidth(w, Qt::SmoothTransformation);
 }
 
 bool Image::isNull() const
