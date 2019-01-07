@@ -7,6 +7,14 @@
 #include "zip/zip.h"
 #include "entryiterator.h"
 
+static QMimeDatabase mdb;
+
+// This needs to be out-of-line to make Clang happy.
+// https://stackoverflow.com/questions/28786473
+EntryIterator::SubIterator::~SubIterator()
+{
+}
+
 #ifdef Q_OS_WIN
 static zip_t *zip_open_unicode(const QFileInfo &info, int level, char mode)
 {
@@ -37,8 +45,6 @@ static zip_t *zip_open_unicode(const QFileInfo &info, int level, char mode)
     return zip_open(filename.toLocal8Bit().constData(), level, mode);
 }
 #endif
-
-static QMimeDatabase mdb;
 
 namespace
 {

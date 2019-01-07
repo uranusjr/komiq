@@ -22,7 +22,7 @@ public:
 
     struct SubIterator
     {
-        virtual ~SubIterator() {}
+        virtual ~SubIterator();
         virtual QByteArray next() = 0;
         virtual QString name() const = 0;
     };

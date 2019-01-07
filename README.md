@@ -24,6 +24,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 [zip]: https://github.com/kuba--/zip
 
+## Compilation
+
+Windows is the main target, but code should compile on most platforms.
+I use Qt 5.12, but I think 5.10 is good enough. C++14 is required.
+
 ## TODO
 
 * Windows Explorer integration
