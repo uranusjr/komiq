@@ -14,6 +14,8 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
 
 CONFIG += c++14
 
+RC_ICONS = ../assets/bubble.ico
+
 SOURCES += \
     main.cpp \
     zip/zip.c \
