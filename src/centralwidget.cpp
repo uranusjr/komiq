@@ -152,7 +152,7 @@ void CentralWidget::resizeEvent(QResizeEvent *)
             this->image2 = Image();
         }
     }
-    else
+    else if (!this->image1.isNull() && !this->image1.isHorizontal())
     {
         if (this->image2.isNull())
             this->image2 = this->readNext();
@@ -203,9 +203,11 @@ void CentralWidget::populateOpenableEntries(const QList<QFileInfo> &sources)
     this->bCache.clear();
     this->iterator = new EntryIterator(infos);
 
-    this->label1->clear();
-    this->label2->clear();
-    this->nextPage();
+    QMetaObject::invokeMethod(this, [this]() {
+        this->label1->clear();
+        this->label2->clear();
+        this->nextPage();
+    }, Qt::QueuedConnection);
 }
 
 void CentralWidget::nextPage()
