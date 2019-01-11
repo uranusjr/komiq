@@ -293,8 +293,7 @@ Image CentralWidget::readNext()
         return Image();
 
     QPixmap pixmap;
-    bool result = false;
-    while (!result)
+    while (true)
     {
         QByteArray bytes = this->iterator->next();
         if (bytes.isNull()) // No more to read.
