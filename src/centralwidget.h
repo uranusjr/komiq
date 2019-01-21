@@ -32,6 +32,7 @@ protected:
 
 private:
     void handleTap(QTapGesture *gesture);
+    void closeCurrentSession();
     void populateOpenableEntries(const QList<QFileInfo> &infos);
     void nextPage();
     void previousPage();

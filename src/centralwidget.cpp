@@ -117,6 +117,9 @@ void CentralWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key::Key_Space:
         this->nextPage();
         break;
+    case Qt::Key::Key_Escape:
+        this->closeCurrentSession();
+        break;
     default:
         break;
     }
@@ -190,24 +193,33 @@ void CentralWidget::handleTap(QTapGesture *)
     this->doubleTapTimer->start(std::min(qApp->doubleClickInterval(), 300));
 }
 
+void CentralWidget::closeCurrentSession()
+{
+    delete this->iterator;
+    this->iterator = nullptr;
+
+    this->fCache.clear();
+    this->bCache.clear();
+
+    QMetaObject::invokeMethod(this, [this]() {
+        this->label1->clear();
+        this->label2->clear();
+    }, Qt::QueuedConnection);
+}
+
 void CentralWidget::populateOpenableEntries(const QList<QFileInfo> &sources)
 {
+    this->closeCurrentSession();
+
     QList<QFileInfo> infos = sources;
     std::sort(infos.begin(), infos.end(), [](const auto &lhs, const auto& rhs) {
         // TODO: Maybe we should do per-component comparison?
         return lhs.absoluteFilePath() < rhs.absoluteFilePath();
     });
-
-    delete this->iterator;
-    this->fCache.clear();
-    this->bCache.clear();
     this->iterator = new EntryIterator(infos);
 
-    QMetaObject::invokeMethod(this, [this]() {
-        this->label1->clear();
-        this->label2->clear();
-        this->nextPage();
-    }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, &CentralWidget::nextPage,
+                              Qt::QueuedConnection);
 }
 
 void CentralWidget::nextPage()
