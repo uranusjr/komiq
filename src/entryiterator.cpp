@@ -124,43 +124,61 @@ private:
 class DirectoryIterator : public EntryIterator::SubIterator
 {
 public:
-    DirectoryIterator(const QDir &dir) :
-        iter(dir, QDirIterator::Subdirectories | QDirIterator::FollowSymlinks)
-    {}
-
-    QByteArray next()
+    DirectoryIterator(const QDir &dir)
     {
-        while (true)
+        QDirIterator::IteratorFlags flags =
+                QDirIterator::Subdirectories | QDirIterator::FollowSymlinks;
+        QDirIterator diriter(dir, flags);
+        while (!diriter.next().isEmpty())
         {
-            if (this->sub)
-            {
-                auto next = this->sub->next();
-                if (!next.isNull())
-                    return next;
-            }
-            if (this->iter.next().isEmpty())
-                return QByteArray();
-            auto info = this->iter.fileInfo();
+            auto info = diriter.fileInfo();
             switch (EntryIterator::fileType(info))
             {
             case EntryIterator::Unsuppoerted:
             case EntryIterator::Directory:
                 break;
             case EntryIterator::Image:
-                this->sub.reset(new ImageFileIterator(info));
+                this->subs.append(new ImageFileIterator(info));
                 break;
             case EntryIterator::ZipArchive:
-                this->sub.reset(new ZipArchiveIterator(info));
+                this->subs.append(new ZipArchiveIterator(info));
                 break;
             }
         }
+        std::sort(this->subs.begin(), this->subs.end(),
+                  [](SubIterator *a, SubIterator *b) {
+            // TODO: Sort paths by components instead of as string?
+            return a->name().compare(b->name(), Qt::CaseInsensitive) < 0;
+        });
     }
 
-    QString name() const { return this->iter.fileInfo().absoluteFilePath(); }
+    ~DirectoryIterator()
+    {
+        for (auto sub : this->subs)
+            delete sub;
+    }
+
+    QByteArray next()
+    {
+        while (this->subs.size())
+        {
+            auto next = this->subs.first()->next();
+            if (!next.isNull())
+                return next;
+            delete this->subs.takeFirst();
+        }
+        return QByteArray();
+    }
+
+    QString name() const
+    {
+        if (this->subs.isEmpty())
+            return QString();
+        return this->subs.first()->name();
+    }
 
 private:
-    QDirIterator iter;
-    QScopedPointer<EntryIterator::SubIterator> sub;
+    QList<SubIterator *> subs;
 };
 
 }   // (anonymous namespace)
