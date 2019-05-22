@@ -114,6 +114,8 @@ void CentralWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key::Key_Left:
         this->previousPage();
         break;
+    case Qt::Key::Key_PageDown:
+        break;
     case Qt::Key::Key_Space:
         this->nextPage();
         break;
@@ -201,10 +203,8 @@ void CentralWidget::closeCurrentSession()
     this->fCache.clear();
     this->bCache.clear();
 
-    QMetaObject::invokeMethod(this, [this]() {
-        this->label1->clear();
-        this->label2->clear();
-    }, Qt::QueuedConnection);
+    this->image1 = Image();
+    this->image2 = Image();
 }
 
 void CentralWidget::populateOpenableEntries(const QList<QFileInfo> &sources)
@@ -222,7 +222,7 @@ void CentralWidget::populateOpenableEntries(const QList<QFileInfo> &sources)
                               Qt::QueuedConnection);
 }
 
-void CentralWidget::nextPage()
+bool CentralWidget::nextPage()
 {
     Image p;
 
@@ -230,7 +230,7 @@ void CentralWidget::nextPage()
     // nothing to stay on the last page.
     p = this->readNext();
     if (p.isNull())
-        return;
+        return false;
 
     QString currentName = this->iterator->currentName();
 
@@ -264,12 +264,13 @@ void CentralWidget::nextPage()
             .arg(qApp->applicationName())
             .arg(currentName);
     this->setWindowTitle(title);
+    return true;
 }
 
-void CentralWidget::previousPage()
+bool CentralWidget::previousPage()
 {
     if (this->bCache.isEmpty())
-        return;
+        return false;
 
     if (this->label2->pixmap())
         this->fCache.push(*this->label2->pixmap());
@@ -297,6 +298,7 @@ void CentralWidget::previousPage()
         }
     }
     this->refreshLabels();
+    return true;
 }
 
 Image CentralWidget::readNext()

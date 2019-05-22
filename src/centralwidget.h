@@ -34,8 +34,8 @@ private:
     void handleTap(QTapGesture *gesture);
     void closeCurrentSession();
     void populateOpenableEntries(const QList<QFileInfo> &infos);
-    void nextPage();
-    void previousPage();
+    bool nextPage();
+    bool previousPage();
 
     Image readNext();
     void refreshLabels();
